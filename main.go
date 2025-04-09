@@ -44,8 +44,6 @@ func handler() {
 		}
 	}
 	rest =  totalRequests - counter
-	fmt.Printf("counter is %d\n", counter)
-	fmt.Printf("rest is %d\n", rest)
 	i := 0
 	for i < counter {
 		req, err := http.Get(*url)
