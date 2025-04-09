@@ -91,27 +91,85 @@ func handler(url *string, requests *int, concurrency *int) {
 
 func getStatusIntoChannel(url *string, urlcmd string, requests *int, requestscmd int, concurrency *int, concurrencycmd int, results chan int) {
 	fmt.Printf("teste")
+	if requestscmd == 0 || concurrencycmd == 0 {
 
-	counter := *requests / *concurrency
-	rest := *requests - (*concurrency * counter)
+		counter := *requests / *concurrency
+		rest := *requests - (*concurrency * counter)
 
-	for range counter {
-		for range *concurrency {
-			go get (url, results)
+		for range counter {
+			for range *concurrency {
+				go get (url,urlcmd, results)
+			}
+		}
+		if rest > 0 {
+			for range rest {
+				go get (url, urlcmd, results)
+			}
 		}
 	}
-	if rest > 0 {
-		for range rest {
-			go get (url, results)
+	if requestscmd != 0 && concurrencycmd == 0 {
+		counter := *requests / concurrencycmd
+		rest := *requests - (concurrencycmd * counter)
+
+		for range counter {
+			for range concurrencycmd {
+				go get (url, urlcmd, results)
+			}
+		}
+		if rest > 0 {
+			for range rest {
+				go get (url, urlcmd, results)
+			}
+		}
+	}
+	if requestscmd == 0 && concurrencycmd != 0 {
+		counter := requestscmd / *concurrency
+		rest := requestscmd - (*concurrency * counter)
+
+		for range counter {
+			for range *concurrency {
+				go get (url, urlcmd, results)
+			}
+		}
+		if rest > 0 {
+			for range rest {
+				go get (url, urlcmd, results)
+			}
+		}
+	}
+	if requestscmd != 0 && concurrencycmd != 0 {
+		counter := requestscmd / concurrencycmd
+		rest := requestscmd - (concurrencycmd * counter)
+
+		for range counter {
+			for range concurrencycmd {
+				go get (url, urlcmd, results)
+			}
+		}
+		if rest > 0 {
+			for range rest {
+				go get (url, urlcmd, results)
+			}
 		}
 	}
 }
 
-func get (url *string, results chan int) {
-	req, err := http.Get(*url)
-	if err != nil {
+func get (url *string, urlcmd string, results chan int) {
+	if urlcmd != "none" {
+		req, err := http.Get(urlcmd)
+		if err != nil {
+			results <- req.StatusCode
+			return
+		}
 		results <- req.StatusCode
-		return
 	}
-	results <- req.StatusCode
+	if urlcmd == "none" {
+		req, err := http.Get(*url)
+		if err != nil {
+			results <- req.StatusCode
+			return
+		}
+		results <- req.StatusCode
+	}
+
 }
