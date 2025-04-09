@@ -33,17 +33,46 @@ func handler() {
 	concurrency = flag.Int("concurrency", 6, "Número de chamadas simultâneas.")
 
 	flag.Parse()
-	totalRequests := *requests
-	totalConcurrency := *concurrency
+
+	results := make(chan Request, *requests)
+
+	go getURLIntoChannel(url, requests, concurrency, results)
+
+	<-results
+	sucesses := 0
+	errors := 0
+
+	for range *requests {
+		result := <-results
+		if result.statuscode == 200 {
+			sucesses++
+		}
+		if result.statuscode != 200 {
+			errors++
+		}
+	}
+
+	end := time.Since(start)
+
+	fmt.Println("URL:", *url)
+	fmt.Println("Número total de requests:", *requests)
+	fmt.Println("Número de chamadas simultâneas:", *concurrency)
+	fmt.Println("Quantidade de requests com status Executados com sucesso:", sucesses)
+	fmt.Println("Quantidade de requests com status Erro:", errors)
+	fmt.Println("Tempo total gasto na execução:", end)
+}
+
+func getURLIntoChannel(url *string, requests *int, concurrency *int, results chan <-Request) {
+
 	counter := 0
 	rest := 0
-	results := make(chan Request, totalRequests)
-	for ;counter < totalRequests; counter = counter + totalConcurrency{
-		if  totalRequests < counter+totalConcurrency {
+
+	for ;counter < *requests; counter = counter + *concurrency{
+		if  *requests < counter+*concurrency {
 			break
 		}
 	}
-	rest =  totalRequests - counter
+	rest =  *requests - counter
 	i := 0
 	for i < counter {
 		req, err := http.Get(*url)
@@ -63,27 +92,4 @@ func handler() {
 		rest --
 	}
 
-	sucesses := 0
-	errors := 0
-
-	for range totalRequests {
-		result := <-results
-
-		if result.statuscode == 200 {
-			sucesses++
-		}
-		if result.statuscode != 200 {
-			errors++
-		}
-
-	}
-
-	end := time.Since(start)
-
-	fmt.Println("URL:", *url)
-	fmt.Println("Número total de requests:", *requests)
-	fmt.Println("Número de chamadas simultâneas:", *concurrency)
-	fmt.Println("Quantidade de requests com status Executados com sucesso:", sucesses)
-	fmt.Println("Quantidade de requests com status Erro:", errors)
-	fmt.Println("Tempo total gasto na execução:", end)
 }
