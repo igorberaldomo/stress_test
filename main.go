@@ -69,20 +69,25 @@ func getStatusIntoChannel(url *string, requests *int, concurrency *int, results 
 
 	for range counter {
 		for range *concurrency {
-			go get (url, results)
+			go get(url, results)
 		}
 		// time.Sleep(time.Millisecond * 500)
 	}
 	if rest > 0 {
 		for range rest {
-			go get (url, results)
+			go get(url, results)
 		}
 	}
 }
 
-func get (url *string, results chan int) {
+func get(url *string, results chan int) {
 	req, err := http.Get(*url)
 	if err != nil {
+		fmt.Println(err)
+		if req == nil {
+			println("Nenhuma resposta recebida do servidor. Verifique a URL.")
+			panic(err)
+		}
 		results <- req.StatusCode
 		return
 	}

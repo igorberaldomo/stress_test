@@ -10,9 +10,9 @@ func main() {
 	http.ListenAndServe(":8080", nil)
 }
 
-func handler (w http.ResponseWriter, r *http.Request) {
+func handler(w http.ResponseWriter, r *http.Request) {
 	number := rand.Intn(100)
-	// 5 % failure rate
+	// 5 % failure ratee
 	if number > 5 {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("OK"))

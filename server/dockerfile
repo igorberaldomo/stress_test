@@ -1,0 +1,17 @@
+FROM golang:1.24 AS server
+WORKDIR /app
+COPY . .
+RUN CGO_ENABLED=0 CGOOS=linux GOARCH=amd64 go build -o server server.go
+
+FROM scratch
+WORKDIR /app
+COPY --from=server /app/server .
+ENTRYPOINT ["./server"]
+EXPOSE 8080
+
+# Add the build command with a specific name
+# To build the Docker image with the name "serverstress", you can use the following command in your terminal:
+# docker build -t serverstress .
+
+# To run the Docker image with the name "server", you can use the following command in your terminal:
+# docker run --name server -p 8080:8080 serverstress

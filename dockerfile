@@ -1,32 +1,16 @@
-FROM golang:1.24 AS server
+FROM golang:1.24 AS build
 WORKDIR /app
-COPY server/server.go ./
+COPY go.mod ./
+COPY main.go ./
 RUN go mod tidy
-RUN CGO_ENABLED=1 CGOOS=linux GOARCH=amd64 go build -o server.go server.go
+RUN CGO_ENABLED=0 CGOOS=linux GOARCH=amd64 go build -o main main.go
 
 FROM scratch
 WORKDIR /app
-COPY --from=server /app/server.go .
-ENTRYPOINT ["./server.go"]
-EXPOSE 8080
+COPY --from=build /app/main .
+ENTRYPOINT ["./main"]
 
-FROM golang:1.24 AS build
-RUN apt-get update && \
-    DEBIAN_FRONTEND=noninteractive \
-    apt-get install --no-install-recommends --assume-yes \
-      build-essential \
-      libsqlite3-dev
-WORKDIR /app
-COPY go.mod ./
-RUN go mod tidy
-COPY . ./
-RUN CGO_ENABLED=1 CGOOS=linux GOARCH=amd64 go build -o main.go main.go
 
-FROM debian:bookworm
-RUN apt-get update && \
-    DEBIAN_FRONTEND=noninteractive \
-    apt-get install --no-install-recommends --assume-yes \
-      libsqlite3-0
-COPY --from=build /app/main.go /usr/bin/main.go
-ENTRYPOINT ["main.go"]
-CMD ["--url=http://localhost:8080", "--requests=100", "--concurrency=10"]
+# docker build -t stresstester .
+
+# docker run --name stresstester stresstester --url=http://172.17.0.2:8080 --requests=105 --concurrency=10
