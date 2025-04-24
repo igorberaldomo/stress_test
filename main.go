@@ -40,15 +40,19 @@ func handler() {
 
 	// <-results
 	sucesses := 0
-	errors := 0
+	errors404 := 0
+	errors500 :=0 
 
 	for range *requests {
 		result := <-results
 		if result == 200 {
 			sucesses++
 		}
-		if result != 200 {
-			errors++
+		if result == 404  {
+			errors404++
+		}
+		if result == 500 {
+			errors500++
 		}
 	}
 
@@ -58,7 +62,8 @@ func handler() {
 	fmt.Println("Número total de requests:", *requests)
 	fmt.Println("Número de chamadas simultâneas:", *concurrency)
 	fmt.Println("Quantidade de requests com status Executados com sucesso:", sucesses)
-	fmt.Println("Quantidade de requests com status Erro:", errors)
+	fmt.Println("Quantidade de requests com status Erro 404:", errors404)
+	fmt.Println("Quantidade de requests com status Erro 500:", errors500)
 	fmt.Println("Tempo total gasto na execução:", end)
 }
 
